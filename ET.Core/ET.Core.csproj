@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.23" />
+        <PackageReference Include="LiteDB" Version="5.0.8" />
+        <PackageReference Include="Nito.Collections.Deque" Version="1.0.4" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+Create storage
+
+Structure
+
+    Language
+        - Id
+        - Name
+        
+    Topic
+        - Id
+        - ShortName
+        - Description
+    
+    Class
+        - Id
+        - Name
+        
+    Word
+        - Id
+        - Value
+        - Language
+
+    Word2Class
+        - WordId
+        - ClassId
+
+    Meaning
+        - Id
+        - Value
+        - LanguageId
+        
+    Comments
+        - Id
+        - MeaningId
+        - Author
+        - Text       
+      
+    Translation
+        - Id
+        - LanguageId
+        - WordId
+        - TopicId
+        - MeaningId    
