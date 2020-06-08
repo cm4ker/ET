@@ -9,7 +9,7 @@ namespace ET.Core
 {
     public class Parser
     {
-        private Dictionary<string, int> _languageCodes = new Dictionary<string, int>
+        private readonly Dictionary<string, int> _languageCodes = new Dictionary<string, int>
         {
             {"en", 1}, {"ru", 2}
         };
@@ -17,17 +17,17 @@ namespace ET.Core
         private const string Url = "http://www.multitran.ru/c/m.exe";
         private const string TablePath = ".//div[@class='middle_col']/table[1]";
 
-        public IEnumerable<Translation> parse_translation_page(string pageContent)
+        private IEnumerable<Translation> parse_translation_page(string pageContent)
         {
             var rows = new Deque<HtmlNode>(get_all_rows(pageContent));
 
             while (rows.Any() && is_separator(rows.RemoveFromFront()) && !is_unknown_separator(rows))
             {
-                yield return parse_translation(rows);
+                yield return ParseTranslation(rows);
             }
         }
 
-        private HtmlNodeCollection get_all_rows(string content)
+        private static HtmlNodeCollection get_all_rows(string content)
         {
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(content);
@@ -35,7 +35,7 @@ namespace ET.Core
             return table.SelectNodes("tr");
         }
 
-        private bool is_separator(HtmlNode row)
+        private static bool is_separator(HtmlNode row)
         {
             return row.SelectSingleNode("td[@class]") is null;
         }
@@ -51,10 +51,12 @@ namespace ET.Core
             return false;
         }
 
-        public string LoadPage(string phrase)
+        private string LoadPage(string phrase)
         {
-            UriBuilder ub = new UriBuilder(Url);
-            ub.Query = $"s={phrase}&l1={_languageCodes["en"]}&l2={_languageCodes["ru"]}";
+            UriBuilder ub = new UriBuilder(Url)
+            {
+                Query = $"s={phrase}&l1={_languageCodes["en"]}&l2={_languageCodes["ru"]}"
+            };
 
             var wc = new WebClient();
             var content = wc.DownloadString(ub.Uri);
@@ -68,25 +70,24 @@ namespace ET.Core
         }
 
 
-        private Translation parse_translation(Deque<HtmlNode> rows)
+        private Translation ParseTranslation(Deque<HtmlNode> rows)
         {
             return new Translation
             {
-                Header = parse_translation_header(rows.RemoveFromFront()),
-                Topic = parse_topics(rows)
+                Header = ParseHeader(rows.RemoveFromFront()),
+                Topic = ParseTopics(rows)
             };
         }
 
-
-        private TranslationHeader parse_translation_header(HtmlNode row)
+        private Header ParseHeader(HtmlNode row)
         {
             var translationHeaderElement = row.SelectSingleNode("td[@class='gray']");
 
             if (translationHeaderElement == null) throw new Exception("header is null");
 
-            var header = new TranslationHeader
+            var header = new Header
             {
-                Text = translationHeaderElement.SelectSingleNode("a").InnerText
+                Word = translationHeaderElement.SelectSingleNode("a").InnerText
             };
 
 
@@ -139,7 +140,7 @@ namespace ET.Core
             return header;
         }
 
-        public List<Topic> parse_topics(Deque<HtmlNode> rows)
+        private List<Topic> ParseTopics(Deque<HtmlNode> rows)
         {
             List<Topic> topics = new List<Topic>();
 
@@ -153,13 +154,13 @@ namespace ET.Core
                     break;
                 }
 
-                topics.Add(parse_topic(row));
+                topics.Add(ParseTopic(row));
             }
 
             return topics;
         }
 
-        public Topic parse_topic(HtmlNode row)
+        private Topic ParseTopic(HtmlNode row)
         {
             HtmlNode
                 topicElement = row.SelectSingleNode("td[@class='subj']"),
@@ -172,12 +173,12 @@ namespace ET.Core
             {
                 ShortName = topicLink?.InnerText,
                 Description = topicLink?.GetAttributeValue("title", ""),
-                Meanings = parse_meanings(meaningsElement).ToList()
+                Meanings = ParseMeanings(meaningsElement).ToList()
             };
         }
 
 
-        public IEnumerable<Meaning> parse_meanings(HtmlNode meaningsElement)
+        private IEnumerable<Meaning> ParseMeanings(HtmlNode meaningsElement)
         {
             var result = new Meaning();
 

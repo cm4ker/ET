@@ -1,12 +1,12 @@
 namespace ET.Core
 {
-    public class TranslationHeader
+    public class Header
     {
-        public TranslationHeader()
+        public Header()
         {
         }
 
-        public string Text { get; set; }
+        public string Word { get; set; }
 
         public string WordPrefix { get; set; }
 
